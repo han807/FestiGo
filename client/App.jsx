@@ -5,9 +5,9 @@ import {
   Route,
   useParams,
   Switch,
-	Redirect
+  Redirect
 } from "react-router-dom";
-import  UserGreeting from './components/UserGreeting.jsx';
+import UserGreeting from './components/UserGreeting.jsx';
 import Login from './components/Login.jsx';
 import ResultsDisplay from './components/ResultsDisplay.jsx';
 const tool = require('../server/tool');
@@ -16,23 +16,24 @@ import "./scss/styles.scss";
 
 
 const App = (props) => {
-    const [user, setUser] = React.useState(null);
-		//send a post request to the server to get the user
-		React.useEffect(() => {
-			fetch('/api/user')
-				.then(res => res.json())
-				.then(data => {
-					setUser(data);
-				});
-		}, []);
-	let getData = false;
+  const [user, setUser] = React.useState(null);
+  //send a post request to the server to get the user
+  React.useEffect(() => {
+    fetch('/api/user')
+      .then(res => res.json())
+      .then(data => {
+        setUser(data);
+      });
+  }, []);
+  let getData = false;
 
-  const [ feedback, feedUpdate ] = useState("");
-  const [ startDate, setStartDate ] = useState('');
-  const [ endDate, setEndDate ] = useState('');
-  const [ searchData, setSearchData ] = useState('');
-  const [ flag, setFlag ] = useState(false)
-	
+  const [feedback, feedUpdate] = useState("");
+  const [feedback2, feed2Update] = useState("");
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [searchData, setSearchData] = useState('');
+  const [flag, setFlag] = useState(false)
+
   let result;
   let infoRes;
   let selectedCountry = "";
@@ -46,6 +47,7 @@ const App = (props) => {
     tmpArr.push(sDateArr)
     tmpArr.push(tool.getDays(sDateArr[0], sDateArr[1], sDateArr[2]));
     setStartDate(tmpArr)
+    feed2Update("");
     validateDate();
   }
 
@@ -64,11 +66,11 @@ const App = (props) => {
     // after state dropdown
   }
 
-  const validateDate = async() => {
+  const validateDate = async () => {
     if (!startDate.length) {
-      feedUpdate("please choose start date")
+      feedUpdate("please choose end date")
     } else if (!endDate.length) {
-      feedUpdate("please chose end date")
+      feedUpdate("please choose start date")
     } else if (startDate[1] <= endDate[1]) {
       feedUpdate("this is valid date");
       await getSearch(startDate[0], endDate[0]);
@@ -82,9 +84,10 @@ const App = (props) => {
   const processInfo = (infos) => {
     console.log('in processInfo, ', infos)
     let tmpArr = [];
-    let infoStr = `Top nation    --    < ${infos[0][0].country}:   ${infos[0][0].cc} events > . . .
-                    Top city    --   < ${infos[2][0].city}:   ${infos[2][0].cc} events >`
-    feedUpdate(infoStr)
+    let infoNation = `Top nation    --    ${infos[0][0].country}:   ${infos[0][0].cc} events`
+    let infoCity = `Top city    --   ${infos[2][0].city}:   ${infos[2][0].cc} events`
+    feedUpdate(infoNation)
+    feed2Update(infoCity)
   }
 
   const getSearch = (sDateArr, eDateArr, country = "", state = "") => {
@@ -106,16 +109,16 @@ const App = (props) => {
       },
       body: JSON.stringify(body),
     })
-    .then (res => {
-      console.log("444444")
-      return res.json();
-    })
-    .then (data => {
-      result = data;
-      console.log('SEARCH RESULT', result)
-	  setSearchData(result);
-    })
-    .catch (err => console.log('UserGreeting fetch /api/country: ERROR: ', err))
+      .then(res => {
+        console.log("444444")
+        return res.json();
+      })
+      .then(data => {
+        result = data;
+        console.log('SEARCH RESULT', result)
+        setSearchData(result);
+      })
+      .catch(err => console.log('UserGreeting fetch /api/country: ERROR: ', err))
   };
 
   const getInfo = (sDateArr, eDateArr, country = "", state = "") => {
@@ -136,43 +139,43 @@ const App = (props) => {
       },
       body: JSON.stringify(body),
     })
-    .then (res => {
-      return res.json();
-    })
-    .then (data => {
-      console.log('GET INFO RESULT', data)
-      infoRes = data;
-      processInfo(infoRes)
-    })
-    .catch (err => console.log('UserGreeting fetch /api/country: ERROR: ', err))
+      .then(res => {
+        return res.json();
+      })
+      .then(data => {
+        console.log('GET INFO RESULT', data)
+        infoRes = data;
+        processInfo(infoRes)
+      })
+      .catch(err => console.log('UserGreeting fetch /api/country: ERROR: ', err))
   };
-	const handleClick = () => {
+  const handleClick = () => {
     setFlag(true);
     return;
   }
-    return (
-		<Router>
-			<div className="wholeContainer">
-      <div className="mainContainer">
-				<div className="selectionContainer">
-				<Switch>
-					<Route exact path="/">
-  					{flag ? <Redirect to="/change" /> : <UserGreeting sCalHandler={sCalHandler} eCalHandler={eCalHandler} feedback={feedback} handleClick={handleClick}/>}
-					</Route>
+  return (
+    <Router>
+      <div className="wholeContainer">
+        <div className="mainContainer">
+          <div className="selectionContainer">
+            <Switch>
+              <Route exact path="/">
+                {flag ? <Redirect to="/change" /> : <UserGreeting sCalHandler={sCalHandler} eCalHandler={eCalHandler} feedback={feedback} feedback2={feedback2} handleClick={handleClick} />}
+              </Route>
 
-				<Route exact path = "/change">		
-				component = <ResultsDisplay results={searchData}/> 
-				</Route>
+              <Route exact path="/change">
+                component = <ResultsDisplay results={searchData} />
+              </Route>
 
-					{/* <Route exact path = "/"		
+              {/* <Route exact path = "/"		
 					component = {UserGreeting} /> */}
-				</Switch>	
-				</div>
+            </Switch>
+          </div>
+        </div>
+
       </div>
-			
-			</div>
-			</Router>
-    );
+    </Router>
+  );
 };
 
 export default App;
